@@ -5,3 +5,10 @@ C:\Users\Boweeton\Documents\GitHub\CS 4200 [Spring 2018]\Project_1\Project_1\obj
 C:\Users\Boweeton\Documents\GitHub\CS 4200 [Spring 2018]\Project_1\Project_1\obj\Debug\Project_1.csproj.CoreCompileInputs.cache
 C:\Users\Boweeton\Documents\GitHub\CS 4200 [Spring 2018]\Project_1\Project_1\obj\Debug\Project_1.exe
 C:\Users\Boweeton\Documents\GitHub\CS 4200 [Spring 2018]\Project_1\Project_1\obj\Debug\Project_1.pdb
+E:\GitHub\CS-4200-Spring-2018\Project_1\Project_1\bin\Debug\Project_1.exe.config
+E:\GitHub\CS-4200-Spring-2018\Project_1\Project_1\bin\Debug\Project_1.exe
+E:\GitHub\CS-4200-Spring-2018\Project_1\Project_1\bin\Debug\Project_1.pdb
+E:\GitHub\CS-4200-Spring-2018\Project_1\Project_1\obj\Debug\Project_1.csprojResolveAssemblyReference.cache
+E:\GitHub\CS-4200-Spring-2018\Project_1\Project_1\obj\Debug\Project_1.csproj.CoreCompileInputs.cache
+E:\GitHub\CS-4200-Spring-2018\Project_1\Project_1\obj\Debug\Project_1.exe
+E:\GitHub\CS-4200-Spring-2018\Project_1\Project_1\obj\Debug\Project_1.pdb
