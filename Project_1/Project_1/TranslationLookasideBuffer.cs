@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Math;
 
 namespace Project_1
 {
@@ -68,8 +69,9 @@ namespace Project_1
         public void SetData(uint uData, uint uAddress, uint uCycle)
         {
             // Local Declarations
-            int setBitsWidth = Associativity; // Todo: find actual calculation here
-            int blockBitsWidth = (int)Math.Log(Entries.Count, 2); // Todo: find actual calculation here
+            int setBitsWidth = Associativity;
+            //int blockBitsWidth = (int)Ceiling(Log(Entries.Count, 2.0)); // ToDo: find real computation
+            int blockBitsWidth = TlbTagBits; // ToDo: rmove this placeholder computation
             int tagWidth = 32 - (blockBitsWidth + setBitsWidth);
             uint localTag = ExtractBits(uAddress, (setBitsWidth + blockBitsWidth), tagWidth);
             bool hasLoggedCurrentEntry = false;
@@ -77,7 +79,7 @@ namespace Project_1
             // Find the tag if present, if so: update LruCycle
             foreach (TLBEntry entry in Entries)
             {
-                if (entry.Tag == localTag)
+                if (entry.Tag == localTag && !hasLoggedCurrentEntry)
                 {
                     // Log the entry
                     entry.LruCycleNumber = (int)uCycle;
@@ -91,7 +93,7 @@ namespace Project_1
             {
                 foreach (TLBEntry entry in Entries)
                 {
-                    if (entry.IsValid == false)
+                    if (entry.IsValid == false && !hasLoggedCurrentEntry)
                     {
                         // Log the entry
                         entry.IsValid = true;
@@ -121,12 +123,14 @@ namespace Project_1
                 // Find that oldest one and overwrite it
                 foreach (TLBEntry entry in Entries)
                 {
-                    if (entry.LruCycleNumber == oldestLruCycle)
+                    if (entry.LruCycleNumber == oldestLruCycle && !hasLoggedCurrentEntry)
                     {
                         // Log the entry
                         entry.Tag = (int)localTag;
                         entry.DataField = uData;
                         entry.LruCycleNumber = (int)uCycle;
+
+                        hasLoggedCurrentEntry = true;
                     }
                 }
             }
@@ -138,36 +142,91 @@ namespace Project_1
         /// <param name="fileName">The given file name to print to or create.</param>
         public void Print(string fileName)
         {
-            // Indent constants
-            const int OffsetAfterBlock = 10;
-            const int OffsetAfterTag = 15;
-            const int OffsetAfterLru = 10;
-
             // Create the file (relativly pathed)
             StreamWriter sw = File.CreateText(fileName);
 
-            // Print header
-            sw.Write($"{"Block",-OffsetAfterBlock}");
-            sw.Write($"{"Tag",-OffsetAfterTag}");
-            sw.Write($"{"LRU",-OffsetAfterLru}");
-            sw.Write("Data");
-            sw.WriteLine();
-
-            for (int i = 0; i < Entries.Count; i++)
+            // If the TLB is fully associative
+            if (Associativity == 0)
             {
-                TLBEntry entry = Entries[i];
-                // Block #
-                sw.Write($"{i, -OffsetAfterBlock}");
-
-                // Tag HEX
-                sw.Write($"0x{entry.Tag,-OffsetAfterTag:X}");
-
-                // LRU #
-                sw.Write($"{entry.LruCycleNumber,-OffsetAfterLru}");
-
-                // Data Hex
-                sw.Write($"0x{entry.DataField:X}");
+                // Print header
+                sw.Write("Block\t");
+                sw.Write("Tag\t");
+                sw.Write("LRU\t");
+                sw.Write("Data");
                 sw.WriteLine();
+
+                for (int i = 0; i < Entries.Count; i++)
+                {
+                    TLBEntry entry = Entries[i];
+
+                    if (entry.IsValid)
+                    {
+                        // Block #
+                        sw.Write($"{i}\t");
+
+                        // Tag HEX
+                        sw.Write($"0x{entry.Tag:X}\t");
+
+                        // LRU #
+                        sw.Write($"{entry.LruCycleNumber}\t");
+
+                        // Data Hex
+                        sw.Write($"0x{entry.DataField:X4}");
+                        sw.WriteLine();
+                    }
+                }
+            }
+            else
+            {
+                // Print header
+                sw.Write("Set\t|\t");
+                for (int i = 0; i < Associativity; i++)
+                {
+                    sw.Write("Valid\t");
+                    sw.Write("Block\t");
+                    sw.Write("Tag\t");
+                    sw.Write("LRU\t");
+                    sw.Write("Data\t|\t");
+                }
+                sw.WriteLine();
+
+                // Loop through each set
+                for (int i = 0; i < Entries.Count; i += Associativity)
+                {
+                    bool setHasData = false;
+
+                    // Check to see if the current set has data
+                    for (int j = i; j < Associativity; j++)
+                    {
+                        setHasData = Entries[j].IsValid;
+                    }
+
+                    // Print the set data if there is indeed data in it
+                    if (true)
+                    {
+                        // Print set #
+                        int setNumber = (i / Associativity) + 1;
+                        sw.Write($"{setNumber}\t|\t");
+                        for (int j = i; j < Associativity; j++)
+                        {
+                            // Print isValid
+                            sw.Write($"{Entries[j].IsValid}\t");
+
+                            // Print block #
+                            sw.Write($"{j}\t");
+
+                            // Print tag info
+                            sw.Write($"{Entries[j].Tag}\t");
+
+                            // Print LRU
+                            sw.Write($"{Entries[j].LruCycleNumber}\t");
+
+                            // Print data in HEX
+                            sw.Write($"0x{Entries[j].DataField:X}\t|\t");
+                        }
+                        sw.WriteLine();
+                    }
+                }
             }
 
             sw.Flush();
