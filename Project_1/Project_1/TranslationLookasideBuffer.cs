@@ -55,13 +55,36 @@ namespace Project_1
 
         #region PublicMethods
 
-        public uint GetData()
+        /// <summary>
+        /// Retrieves data from the specified address after decompisition. (Returns 0xffffffff if it's a miss.)
+        /// </summary>
+        /// <param name="uAddress">The Address to be decomposed to get info (based on the TLB Associativity and Number of Tag Bits).</param>
+        /// <param name="uCycle">The current cycle.</param>
+        /// <returns></returns>
+        public uint GetData(uint uAddress, uint uCycle)
         {
-            return 0;
+            // Local Declarations
+            int setBitsWidth = Associativity;
+            int blockBitsWidth = TlbTagBits;
+            int localSetBegining = (int)ExtractBits(uAddress, blockBitsWidth, setBitsWidth);
+            int tagWidth = 32 - (blockBitsWidth + setBitsWidth);
+            uint localTag = ExtractBits(uAddress, (setBitsWidth + blockBitsWidth), tagWidth);
+
+            // Look through the desired set
+            for (int i = localSetBegining; i < Associativity; i++)
+            {
+                if (Entries[i].Tag == localTag)
+                {
+                    Entries[i].LruCycleNumber = (int)uCycle;
+                    return Entries[i].DataField;
+                }
+            }
+
+            return 0xffffffff;
         }
 
         /// <summary>
-        /// Sets data into the TLB. 
+        /// Sets data into the TLB.
         /// </summary>
         /// <param name="uData">The data that's being stored.</param>
         /// <param name="uAddress">The Address to be decomposed to get info (based on the TLB Associativity and Number of Tag Bits).</param>
@@ -70,11 +93,11 @@ namespace Project_1
         {
             // Local Declarations
             int setBitsWidth = Associativity;
-            //int blockBitsWidth = (int)Ceiling(Log(Entries.Count, 2.0)); // ToDo: find real computation
-            int blockBitsWidth = TlbTagBits; // ToDo: rmove this placeholder computation
+            int blockBitsWidth = TlbTagBits;
             int tagWidth = 32 - (blockBitsWidth + setBitsWidth);
             uint localTag = ExtractBits(uAddress, (setBitsWidth + blockBitsWidth), tagWidth);
             bool hasLoggedCurrentEntry = false;
+            int localSet = (int)ExtractBits(uAddress, 16, 7);
 
             // Find the tag if present, if so: update LruCycle
             foreach (TLBEntry entry in Entries)
