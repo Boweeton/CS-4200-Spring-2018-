@@ -7,7 +7,7 @@ using System.Text;
 namespace Project_2
 {
     /// <summary>
-    /// 
+    /// Emulates some basic functionality of a cache in the memory higherarchy.
     /// </summary>
     public class Cache
     {
